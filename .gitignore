@@ -1,0 +1,61 @@
+# ========================================
+# Node.js (server/)
+# ========================================
+server/node_modules/
+server/.env
+server/logs/
+server/npm-debug.log*
+server/yarn-debug.log*
+server/yarn-error.log*
+
+# ========================================
+# React Native (mobile/)
+# ========================================
+mobile/node_modules/
+mobile/ios/Pods/
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/android/build/
+mobile/.expo/
+mobile/expo/
+mobile/.expo-shared/
+mobile/.env
+mobile/bundle.js
+mobile/coverage/
+mobile/*.log
+
+# Metro & watchman
+mobile/.watchmanconfig
+mobile/.vscode/
+
+# macOS & Xcode (desktop/)
+# ========================================
+desktop/SpaceScribe/DerivedData/
+desktop/SpaceScribe/*.xcworkspace
+desktop/SpaceScribe/*.xcodeproj/
+desktop/SpaceScribe/*.xcuserstate
+desktop/SpaceScribe/*.pbxuser
+desktop/SpaceScribe/*.swiftpm
+desktop/SpaceScribe/*.build/
+
+
+# ========================================
+# OS / Editor Junk Files
+# ========================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.log
+.idea/
+*.iml
+.vscode/
+*.bak
+*.tmp
+
+# ========================================
+# General
+# ========================================
+.env
+.env.*.local
+*.local
