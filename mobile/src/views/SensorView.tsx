@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View, Button } from 'react-native';
 import SensorController from '../controllers/SensorController';
 import { SensorData } from '../models/SensorModel';
 
@@ -8,7 +8,6 @@ interface EnrichedSensorData {
   gyroscopeData: SensorData | null;
   magnetometerData: SensorData | null;
   barometerData: { pressure: number } | null;
-
   tiltXY: number;
   tiltYZ: number;
   tiltXZ: number;
@@ -28,7 +27,6 @@ const SensorView: React.FC = () => {
     gyroscopeData: null,
     magnetometerData: null,
     barometerData: null,
-
     tiltXY: 0,
     tiltYZ: 0,
     tiltXZ: 0,
@@ -58,6 +56,16 @@ const SensorView: React.FC = () => {
     };
   }, []);
 
+  const sendControlCommand = (action: 'start' | 'stop') => {
+    const ws = SensorController['websocket'];
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'control', action }));
+      console.log(`📤 Sent ${action} logging command`);
+    } else {
+      console.error('❌ WebSocket not ready');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#1e1e2f" barStyle="light-content" />
@@ -81,9 +89,13 @@ const SensorView: React.FC = () => {
           <Text style={styles.dataText}>Total Tilt from Vertical: {sensorData.totalTiltFromVertical.toFixed(2)}°</Text>
           <Text style={styles.dataText}>Angular Speed: {sensorData.angularSpeed.toFixed(4)} rad/s</Text>
           <Text style={styles.dataText}>Altitude: {sensorData.altitude?.toFixed(2) ?? '—'} m</Text>
-          <Text style={[styles.dataText, { fontWeight: 'bold', marginTop: 10 }]}>
-            📈 Dominant Plane: {sensorData.dominantPlane}
-          </Text>
+          <Text style={[styles.dataText, { fontWeight: 'bold', marginTop: 10 }]}>📈 Dominant Plane: {sensorData.dominantPlane}</Text>
+        </View>
+
+        <View style={{ marginTop: 20 }}>
+          <Button title="Start CSV Logging" onPress={() => sendControlCommand('start')} />
+          <View style={{ height: 10 }} />
+          <Button title="Stop CSV Logging" onPress={() => sendControlCommand('stop')} />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -116,15 +128,8 @@ const SensorCard: React.FC<SensorCardProps> = ({ title, data, isBarometer = fals
 );
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    width: '100%',
-  },
-  scroll: {
-    padding: 16,
-    paddingBottom: 40,
-  },
+  container: { flex: 1, backgroundColor: '#fff', width: '100%' },
+  scroll: { padding: 16, paddingBottom: 40 },
   subHeader: {
     fontSize: 20,
     fontWeight: '700',
@@ -144,22 +149,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#2c3e50',
-  },
-  dataText: {
-    fontSize: 16,
-    color: '#34495e',
-    marginVertical: 2,
-  },
-  noData: {
-    fontSize: 15,
-    color: '#aaa',
-    fontStyle: 'italic',
-  },
+  cardTitle: { fontSize: 18, fontWeight: '600', marginBottom: 8, color: '#2c3e50' },
+  dataText: { fontSize: 16, color: '#34495e', marginVertical: 2 },
+  noData: { fontSize: 15, color: '#aaa', fontStyle: 'italic' },
 });
 
 export default SensorView;

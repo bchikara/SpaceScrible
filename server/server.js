@@ -18,6 +18,8 @@ wss.on('connection', (ws) => {
       const parsed = JSON.parse(message);
       if (parsed.type === 'sensorData') {
         SensorController.handleSensorData(parsed.data);
+      } else if (parsed.type === 'control') {
+        SensorController.handleControlMessage(parsed.action);
       }
     } catch (err) {
       console.error('❌ Invalid message:', err);

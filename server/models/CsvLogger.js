@@ -3,14 +3,37 @@ const path = require('path');
 
 class CsvLogger {
   constructor() {
+    this.logging = false;
+    this.counter = 1;
+    this.stream = null;
+  }
+
+  start() {
+    if (this.logging) return;
     const dataDir = path.join(__dirname, '..', 'data');
     if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir); // ✅ Create folder if not exists
+      fs.mkdirSync(dataDir);
     }
 
-    this.filePath = path.join(dataDir, 'sensor-data.csv');
-    this.stream = fs.createWriteStream(this.filePath, { flags: 'w' });
+    let filePath;
+    do {
+      filePath = path.join(dataDir, `alphabet-${this.counter}.csv`);
+      this.counter++;
+    } while (fs.existsSync(filePath));
+
+    this.stream = fs.createWriteStream(filePath, { flags: 'w' });
     this.writeHeader();
+    this.logging = true;
+    console.log('📁 Started new CSV log:', filePath);
+  }
+
+  stop() {
+    if (this.stream) {
+      this.stream.end();
+      this.stream = null;
+    }
+    this.logging = false;
+    console.log('🛑 Stopped CSV logging');
   }
 
   writeHeader() {
@@ -30,6 +53,8 @@ class CsvLogger {
   }
 
   log(data) {
+    if (!this.logging || !this.stream) return;
+
     const flatten = (prefix, obj) =>
       obj
         ? Object.entries(obj).reduce((acc, [key, val]) => {
