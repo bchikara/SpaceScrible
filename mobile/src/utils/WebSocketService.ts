@@ -4,8 +4,8 @@ class WebSocketService {
   public static getWebSocket(): WebSocket {
     if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
       // Update with correct IP address of your desktop and correct port
-      this.websocket = new WebSocket('ws://192.168.172.228:8080');
-      console.log('✅ WebSocket initialized with IP:', 'ws://192.168.172.228:8080');
+      this.websocket = new WebSocket('ws://192.168.0.117:8080');
+      console.log('✅ WebSocket initialized with IP:', 'ws://192.168.0.117:8080');
     }
 
     // WebSocket connection successful

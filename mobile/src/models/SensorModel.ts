@@ -1,5 +1,12 @@
-import { accelerometer, gyroscope, SensorTypes, setUpdateIntervalForType } from 'react-native-sensors';
-import DeviceInfo from 'react-native-device-info'; // Import device info module
+import {
+  accelerometer,
+  gyroscope,
+  magnetometer,
+  barometer,
+  SensorTypes,
+  setUpdateIntervalForType,
+} from 'react-native-sensors';
+import DeviceInfo from 'react-native-device-info';
 import { Platform } from 'react-native';
 
 // Sensor data type interface
@@ -9,74 +16,98 @@ export interface SensorData {
   z: number;
 }
 
+export interface AllSensorData {
+  accelerometerData: SensorData | null;
+  gyroscopeData: SensorData | null;
+  magnetometerData: SensorData | null;
+  barometerData: { pressure: number } | null;
+}
+
 class SensorModel {
   private accelerometerData: SensorData | null = null;
   private gyroscopeData: SensorData | null = null;
+  private magnetometerData: SensorData | null = null;
+  private barometerData: { pressure: number } | null = null;
 
   constructor() {
-    // Set sensor update intervals (100ms)
     setUpdateIntervalForType(SensorTypes.accelerometer, 100);
     setUpdateIntervalForType(SensorTypes.gyroscope, 100);
+    setUpdateIntervalForType(SensorTypes.magnetometer, 100);
+    setUpdateIntervalForType(SensorTypes.barometer, 100);
 
-    // Inform that no permissions are required for sensors on Android
     if (Platform.OS === 'android') {
       console.log('No specific permissions required for sensors on Android');
     }
   }
 
-  // Corrected isSimulator() with async/await
   private async isSimulator(): Promise<boolean> {
     try {
-      const isEmulator = await DeviceInfo.isEmulator();
-      return isEmulator;
+      return await DeviceInfo.isEmulator();
     } catch (error) {
-      console.error('Error checking if running on simulator:', error);
+      console.error('Error checking if emulator:', error);
       return false;
     }
   }
 
-  // Make subscribeToSensors asynchronous
-  public async subscribeToSensors(
-    callback: (data: { accelerometerData: SensorData | null; gyroscopeData: SensorData | null }) => void
-  ) {
-    // Await the simulator check
+  public async subscribeToSensors(callback: (data: AllSensorData) => void) {
     const isSim = await this.isSimulator();
     if (isSim) {
-      console.log('Running on a simulator. Sensor subscription skipped.');
-      callback({ accelerometerData: null, gyroscopeData: null });
-      return () => {}; // Return an empty cleanup function
+      console.log('Running on simulator. Sensor data disabled.');
+      callback({
+        accelerometerData: null,
+        gyroscopeData: null,
+        magnetometerData: null,
+        barometerData: null,
+      });
+      return () => {};
     }
 
-    // Accelerometer subscription
     const accelerometerSubscription = accelerometer.subscribe({
       next: (data) => {
-        console.log('Accelerometer Data Received:', data); // Log accelerometer data
         this.accelerometerData = data;
-        callback({ accelerometerData: this.accelerometerData, gyroscopeData: this.gyroscopeData });
+        callback(this.buildCallbackData());
       },
-      error: (error) => {
-        console.error('Error with accelerometer:', error);
-      },
+      error: (error) => console.error('Accelerometer error:', error),
     });
 
-    // Gyroscope subscription
     const gyroscopeSubscription = gyroscope.subscribe({
       next: (data) => {
-        console.log('Gyroscope Data Received:', data); // Log gyroscope data
         this.gyroscopeData = data;
-        callback({ accelerometerData: this.accelerometerData, gyroscopeData: this.gyroscopeData });
+        callback(this.buildCallbackData());
       },
-      error: (error) => {
-        console.error('Error with gyroscope:', error);
-        callback({ accelerometerData: this.accelerometerData, gyroscopeData: null });
-      },
+      error: (error) => console.error('Gyroscope error:', error),
     });
 
-    // Return cleanup function to unsubscribe when not needed
+    const magnetometerSubscription = magnetometer.subscribe({
+      next: (data) => {
+        this.magnetometerData = data;
+        callback(this.buildCallbackData());
+      },
+      error: (error) => console.error('Magnetometer error:', error),
+    });
+
+    const barometerSubscription = barometer.subscribe({
+      next: (data) => {
+        this.barometerData = { pressure: data.pressure };
+        callback(this.buildCallbackData());
+      },
+      error: (error) => console.error('Barometer error:', error),
+    });
+
     return () => {
-      console.log('Unsubscribing from sensors...');
       accelerometerSubscription.unsubscribe();
       gyroscopeSubscription.unsubscribe();
+      magnetometerSubscription.unsubscribe();
+      barometerSubscription.unsubscribe();
+    };
+  }
+
+  private buildCallbackData(): AllSensorData {
+    return {
+      accelerometerData: this.accelerometerData,
+      gyroscopeData: this.gyroscopeData,
+      magnetometerData: this.magnetometerData,
+      barometerData: this.barometerData,
     };
   }
 }
