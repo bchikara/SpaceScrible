@@ -13,12 +13,15 @@ app.use('/', healthRoute);
 wss.on('connection', (ws) => {
   console.log('✅ Client connected');
 
+  SensorController.attachClients(ws);
+
   ws.on('message', (message) => {
     try {
       const parsed = JSON.parse(message);
       if (parsed.type === 'sensorData') {
         SensorController.handleSensorData(parsed.data);
       } else if (parsed.type === 'control') {
+        console.log('control')
         SensorController.handleControlMessage(parsed.action);
       }
     } catch (err) {
@@ -30,7 +33,7 @@ wss.on('connection', (ws) => {
     console.log('⚠️ Client disconnected');
   });
 
-  ws.send('✅ WebSocket server ready');
+  ws.send(JSON.stringify({ type: 'serverReady', message: 'WebSocket server ready' }));
 });
 
 const PORT = 8080;

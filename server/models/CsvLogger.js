@@ -6,6 +6,7 @@ class CsvLogger {
     this.logging = false;
     this.counter = 1;
     this.stream = null;
+    this.gyroThreshold = 0.05; // Customize this threshold if needed
   }
 
   start() {
@@ -49,16 +50,34 @@ class CsvLogger {
       'angularSpeed', 'heading',
       'altitude'
     ];
+    this.headers = headers;
     this.stream.write(headers.join(',') + '\n');
+  }
+
+  isGyroStable(gyroData) {
+    if (!gyroData) return true;
+    const { x = 0, y = 0, z = 0 } = gyroData;
+    return (
+      Math.abs(x) < this.gyroThreshold ||
+      Math.abs(y) < this.gyroThreshold ||
+      Math.abs(z) < this.gyroThreshold
+    );
   }
 
   log(data) {
     if (!this.logging || !this.stream) return;
 
+    if (this.isGyroStable(data.gyroscopeData)) {
+      console.log('📉 Skipping row - gyroscope stable');
+      return;
+    }
+
     const flatten = (prefix, obj) =>
       obj
         ? Object.entries(obj).reduce((acc, [key, val]) => {
-            acc[`${prefix}_${key}`] = val;
+            if (!key.toLowerCase().includes('timestamp')) {
+              acc[`${prefix}_${key}`] = val;
+            }
             return acc;
           }, {})
         : {};
@@ -69,19 +88,20 @@ class CsvLogger {
       ...flatten('gyro', data.gyroscopeData),
       ...flatten('mag', data.magnetometerData),
       baro_pressure: data.barometerData?.pressure ?? '',
-      tiltXY: data.tiltXY,
-      tiltYZ: data.tiltYZ,
-      tiltXZ: data.tiltXZ,
-      roll: data.roll,
-      pitch: data.pitch,
-      yaw: data.yaw,
-      totalTiltFromVertical: data.totalTiltFromVertical,
-      angularSpeed: data.angularSpeed,
-      heading: data.heading,
-      altitude: data.altitude ?? '',
+      tiltXY: data.tiltXY ?? '',
+      tiltYZ: data.tiltYZ ?? '',
+      tiltXZ: data.tiltXZ ?? '',
+      roll: data.roll ?? '',
+      pitch: data.pitch ?? '',
+      yaw: data.yaw ?? '',
+      totalTiltFromVertical: data.totalTiltFromVertical ?? '',
+      angularSpeed: data.angularSpeed ?? '',
+      heading: data.heading ?? '',
+      altitude: data.altitude ?? ''
     };
 
-    this.stream.write(Object.values(row).join(',') + '\n');
+    const values = this.headers.map((key) => row[key] ?? '');
+    this.stream.write(values.join(',') + '\n');
   }
 }
 
