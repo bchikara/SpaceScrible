@@ -6,7 +6,7 @@ class CsvLogger {
     this.logging = false;
     this.counter = 1;
     this.stream = null;
-    this.gyroThreshold = 0.05; // Customize this threshold if needed
+    this.gyroThreshold = 0.01; // Customize this threshold if needed
   }
 
   start() {
