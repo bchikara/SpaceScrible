@@ -4,21 +4,27 @@
 
 > 📱 Mobile (React Native) → 🌐 Node WebSocket Server → 🐍 Python Service (Gesture Recognition) → 🖥️ Desktop Client (Swift/macOS - AI Display)
 
-
-![Mobile App Live Sensor Data](preview/mobile_app.jpeg)
+<img src="preview/mobile_app.jpeg" height="400">
+<br>
 *This image showcases the live sensor data being captured by the mobile app, including accelerometer, gyroscope, magnetometer, and barometer readings.*
-
-![Mobile App Computed Values](preview/mobile_app_csv_logger.jpeg)
+<br>
+<img src="preview/mobile_app_csv_logger.jpeg" height="400">
+<br>
 *Here you can see the computed values derived from the raw sensor data, such as tilt angles, roll, pitch, yaw, and heading, providing a more intuitive understanding of the device's orientation and motion.*
+<br>
+<br>
 
 ![Node.js Server Logs](preview/server_logs.jpeg)
 *This log output demonstrates the Node.js server receiving a continuous stream of sensor data from connected mobile devices, confirming the real-time data transmission pipeline.*
+<br>
 
 ![System Architecture Diagram](preview/architecture.jpeg)
 *This diagram illustrates the overall architecture of SpaceScrible, highlighting the flow of sensor data from the mobile app through the Node.js server to the Python gesture recognition service and finally to the desktop AI display.*
+<br>
 
 ![Python Model Training and Prediction](preview/training_and_prediction.jpeg)
 *This shows the Python service in action, including the training process of the machine learning model for gesture recognition and a prediction of the recognized alphabet.*
+<br>
 
 ---
 
