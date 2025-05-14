@@ -18,7 +18,7 @@ class SensorController {
       clients.forEach((client) => {
 
         if (client.readyState === 1) {
-          // console.log('📤 Broadcasting to clients:', message);
+          console.log('📤 Broadcasting to clients:', message);
           client.send(message);
         }
       });

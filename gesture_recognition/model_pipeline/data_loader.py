@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 def load_data(data_dir, time_steps=100):
     X = []
     y = []
-    labels = ["O", "I", "L", "U", "V"]
+    labels = ["O", "I", "V"]
     
     # Iterate over each letter folder
     for label in labels:

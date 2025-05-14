@@ -1,16 +1,34 @@
 # 🚀 SpaceScrible
 
-**SpaceScrible** is a cross-platform real-time motion tracking app. It captures **sensor data** (gyroscope + accelerometer) from a mobile device and transmits it to a **desktop app** using **WebSockets** via a Node.js backend.
+**SpaceScrible** is a cross-platform real-time motion tracking app. It captures **sensor data** (gyroscope + accelerometer) from a mobile device, streams it to a Node.js backend, which then forwards it to a Python service for alphabet recognition. The predicted alphabet is then displayed on a desktop AI interface.
 
-> 📱 Mobile (React Native) → 🌐 Node WebSocket Server → 🖥️ Desktop Client (Swift/macOS)
+> 📱 Mobile (React Native) → 🌐 Node WebSocket Server → 🐍 Python Service (Gesture Recognition) → 🖥️ Desktop Client (Swift/macOS - AI Display)
+
+
+![Mobile App Live Sensor Data](preview/mobile_app.jpeg)
+*This image showcases the live sensor data being captured by the mobile app, including accelerometer, gyroscope, magnetometer, and barometer readings.*
+
+![Mobile App Computed Values](preview/mobile_app_csv_logger.jpeg)
+*Here you can see the computed values derived from the raw sensor data, such as tilt angles, roll, pitch, yaw, and heading, providing a more intuitive understanding of the device's orientation and motion.*
+
+![Node.js Server Logs](preview/server_logs.jpeg)
+*This log output demonstrates the Node.js server receiving a continuous stream of sensor data from connected mobile devices, confirming the real-time data transmission pipeline.*
+
+![System Architecture Diagram](preview/architecture.jpeg)
+*This diagram illustrates the overall architecture of SpaceScrible, highlighting the flow of sensor data from the mobile app through the Node.js server to the Python gesture recognition service and finally to the desktop AI display.*
+
+![Python Model Training and Prediction](preview/training_and_prediction.jpeg)
+*This shows the Python service in action, including the training process of the machine learning model for gesture recognition and a prediction of the recognized alphabet.*
 
 ---
 
 ## ✨ Features
 
 - 📲 Capture real-time gyroscope & accelerometer data from mobile sensors
-- 🔁 Stream sensor data to a connected desktop device via WebSocket
-- 📈 Swift desktop app to visualize incoming sensor events
+- 🔁 Stream sensor data to a connected Node.js server via WebSocket
+- 🧠 **New:** Python service analyzes sensor data to predict alphabets.
+- 🖥️ Swift desktop app to visualize incoming sensor events and display the recognized alphabet.
+- 🌐 Communication between backend and Python service.
 - 🧠 Modular, layered folder structure for clean separation
 - ✅ Built with production best practices
 
@@ -23,24 +41,58 @@ SpaceScrible/
 ├── .gitignore
 ├── README.md
 ├── mobile/           # React Native Mobile App (TypeScript)
+│   ├── android/
+│   ├── ios/
 │   ├── src/
-│   │   ├── components/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── utils/         # WebSocketService.ts
-│   │   └── views/
-│   └── App.tsx
+│   ├── vendor/
+│   ├── .eslintrc.js
+│   ├── .gitattributes
+│   ├── .gitignore
+│   ├── .prettierrc.js
+│   ├── .watchmanconfig
+│   ├── app.json
+│   ├── App.tsx
+│   ├── babel.config.js
+│   ├── Gemfile
+│   ├── Gemfile.lock
+│   ├── index.js
+│   ├── jest.config.js
+│   ├── metro.config.js
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── README.md
+│   └── tsconfig.json
 │
 ├── server/     # Node.js WebSocket Server
+│   ├── controllers/
+│   ├── data/
+│   ├── models/
+│   ├── routes/
+│   ├── package-lock.json
+│   ├── package.json
 │   ├── server.js
-│   └── package.json
+│   └── .gitignore
+│   └── README.md
 │
-└── desktop/          # macOS Swift App (Xcode Project)
-    ├── Controller/
-    ├── Model/
-    ├── View/
-    ├── WebSocketManager.swift
-    └── SpaceScribIe.xcodeproj
+├── desktop/          # macOS Swift App (Xcode Project)
+│   ├── Controller/
+│   ├── Model/
+│   ├── View/
+│   ├── WebSocketManager.swift
+│   └── SpaceScribIe.xcodeproj
+│
+└── gesture_recognition/ # Python Service for Gesture Recognition
+    ├── # (Your Python scripts, models, etc. will be here)
+    ├── Create/
+    ├── environment/
+    ├── interactive_learning/
+    ├── model_pipeline/
+    ├── myenv/
+    ├── path/
+    ├── real_time_prediction/
+    ├── source/
+    ├── venv/
+    └── virtual/
 \`\`\`
 
 ---
@@ -52,7 +104,8 @@ SpaceScrible/
 - Node.js + npm
 - Xcode (for Swift/macOS app)
 - React Native CLI + Android/iOS simulator
-- All devices connected to same local network (for WebSocket to work)
+- **Python and necessary libraries (e.g., TensorFlow, PyTorch, etc. - as required by your `gesture_recognition` service)**
+- All devices connected to the same local network (for WebSocket communication)
 
 ---
 
@@ -64,12 +117,25 @@ npm install
 node server.js
 \`\`\`
 
-> By default, the server runs on \`ws://<your-local-ip>:8080\`.  
+> By default, the server runs on \`ws://<your-local-ip>:8080\`.
 > Use \`ifconfig\` or \`ipconfig\` to get the IP to plug into your client apps.
 
 ---
 
-### 📱 2. Run the React Native Mobile App
+### 🐍 2. Start the Python Gesture Recognition Service
+
+\`\`\`bash
+cd gesture_recognition
+# Activate your Python environment (if applicable)
+# source venv/bin/activate  # Example for a virtual environment
+python your_main_script.py  # Replace with the actual name of your main Python script
+\`\`\`
+
+> Note the port or communication method your Python service uses. You might need to configure the Node.js server to communicate with it.
+
+---
+
+### 📱 3. Run the React Native Mobile App
 
 \`\`\`bash
 cd ../SpaceScribe
@@ -77,7 +143,7 @@ npm install
 npx react-native run-ios     # or: run-android
 \`\`\`
 
-**Update \`WebSocketService.ts\` with the correct IP:**
+**Update \`WebSocketService.ts\` with the correct IP of the Node.js server:**
 
 \`\`\`ts
 const socket = new WebSocket('ws://192.168.x.x:8080');
@@ -85,20 +151,22 @@ const socket = new WebSocket('ws://192.168.x.x:8080');
 
 ---
 
-### 💻 3. Run the macOS Swift App (Desktop)
+### 💻 4. Run the macOS Swift App (Desktop)
 
 1. Open \`SpaceScribIe.xcodeproj\` in Xcode
 2. Build and run the project
-3. Make sure \`WebSocketManager.swift\` is using the **same IP and port** as the server
+3. Ensure \`WebSocketManager.swift\` is using the **same IP and port** as the Node.js server. The desktop app will now receive the predicted alphabet from the server.
 
 ---
 
 ## 🧪 How It Works
 
-- The React Native app reads gyroscope & accelerometer values
-- It sends this data every \`x\` milliseconds to the Node.js WebSocket server
-- The macOS app connects to the server and listens for incoming data
-- Data is displayed in real time in the desktop app console
+- The React Native app reads gyroscope & accelerometer values.
+- It sends this data every \`x\` milliseconds to the Node.js WebSocket server.
+- The Node.js server receives the sensor data and **forwards it to the Python `gesture_recognition` service.**
+- **The Python service analyzes the incoming sensor data using your machine learning models to predict the alphabet being drawn.**
+- **The predicted alphabet is then sent back to the Node.js server.**
+- The macOS app connects to the Node.js server and listens for incoming data, **now including the predicted alphabet, which is displayed on the AI interface.**
 
 ---
 
@@ -107,18 +175,20 @@ const socket = new WebSocket('ws://192.168.x.x:8080');
 | Platform       | Tech                            |
 |----------------|---------------------------------|
 | Backend        | Node.js, WebSocket              |
+| **AI Service** | **Python, (TensorFlow/PyTorch/etc.)** |
 | Mobile         | React Native, TypeScript        |
 | Desktop/macOS  | Swift, URLSessionWebSocketTask  |
-| Protocol       | WebSocket                       |
+| Protocol       | WebSocket (potentially others for Node.js <-> Python) |
 
 ---
 
 ## 💡 Future Ideas
 
-- Add a visual plot/graph to desktop app (e.g. SwiftCharts or SwiftUI Canvas)
-- Create a dashboard UI to replay sensor motion trails
-- Store session data and export to CSV/JSON
-- Add authentication or connection status indicator
+- Enhance the alphabet recognition accuracy and supported characters.
+- Visualize the motion trail or confidence levels of the predictions on the desktop AI.
+- Implement user feedback mechanisms to improve the model.
+- Explore different machine learning models and techniques.
+- Store session data, including predictions.
 
 ---
 
@@ -129,6 +199,3 @@ Contributions are welcome! Feel free to open an issue or pull request.
 \`\`\`bash
 git clone https://github.com/bchikara/SpaceScrible.git
 \`\`\`
-
----
-
